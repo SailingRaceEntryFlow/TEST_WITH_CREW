@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regatta Entry Management System</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #2f241d;
+      background: #0d5e92;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .panel {
+      background: rgba(241, 244, 239, 0.92);
+      border-radius: 6px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      min-height: auto;
+      background-color: #dfe5df;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.18;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 18px 18px 14px 18px;
+    }
+
+    .logo-row {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .event-logo {
+      max-width: 220px;
+      max-height: 110px;
+      display: block;
+    }
+
+    .app-title {
+      text-align: center;
+      font-size: 30px;
+      font-weight: 700;
+      margin: 6px 0 10px 0;
+      color: #2f241d;
+      line-height: 1.2;
+    }
+
+    .app-subtitle {
+      text-align: center;
+      font-size: 18px;
+      line-height: 1.5;
+      font-weight: 500;
+      max-width: 760px;
+      margin: 0 auto 14px auto;
+      color: #2f241d;
+    }
+
+    .hero-notes {
+      max-width: 760px;
+      margin: 0 auto;
+      padding-left: 20px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .hero-notes li {
+      margin-bottom: 10px;
+    }
+
+    .hero-notes a {
+      color: #0d5e92;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    .hero-notes a:hover {
+      opacity: 0.85;
+    }
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  text-align: center;
+  font-size: 38px;
+  font-weight: 900;
+  margin: 22px auto 24px auto;
+  letter-spacing: 3px;
+  color: #0d5e92;
+}
+
+.section-title::before,
+.section-title::after {
+  content: "";
+  flex: 1;
+  max-width: 310px;
+  height: 3px;
+  background: #0d5e92;
+}
+
+    .section-subtitle {
+      text-align: center;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .separator {
+      border-top: 1px solid #7a6c62;
+      margin: 8px 0 14px 0;
+    }
+
+    .notice-box {
+      border: 2px solid #8da170;
+      background: rgba(255, 255, 255, 0.45);
+      text-align: center;
+      padding: 0;
+      margin: 0 auto 14px auto;
+      max-width: 760px;
+    }
+
+    .notice-box .line1 {
+      font-size: 19px;
+      font-style: italic;
+      font-weight: 700;
+      padding: 8px 10px 4px;
+    }
+
+    .notice-box .line2 {
+      font-size: 18px;
+      font-style: italic;
+      color: #5f5147;
+      padding: 0 10px 8px;
+    }
+
+    .notice-box .line3 {
+      border-top: 1px solid #a9a08f;
+      font-size: 18px;
+      font-weight: 700;
+      color: #e53935;
+      letter-spacing: 4px;
+      padding: 6px 10px;
+    }
+
+    .notice-box .line4 {
+      font-size: 18px;
+      line-height: 1.4;
+      padding: 8px 18px 10px;
+    }
+
+    .notice-box .line5 {
+      border-top: 1px solid #a9a08f;
+      font-size: 14px;
+      font-style: italic;
+      color: #273c8f;
+      padding: 6px 10px;
+    }
+
+    .search-area {
+      max-width: 360px;
+      margin: 12px auto 8px auto;
+      text-align: center;
+    }
+
+    .search-area input {
+      width: 100%;
+      height: 42px;
+      padding: 8px 12px;
+      font-size: 20px;
+      text-align: center;
+      border: 1px solid #9b9b9b;
+      background: #fff;
+    }
+
+    .btn {
+      display: inline-block;
+      min-width: 210px;
+      height: 42px;
+      padding: 0 18px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 16px;
+      color: #fff;
+      background: #4d8b1f;
+      margin-top: 6px;
+    }
+
+    .btn:hover {
+      opacity: 0.95;
+    }
+
+    .btn.secondary {
+      background: #6d6d6d;
+    }
+
+    .status {
+      text-align: center;
+      min-height: 28px;
+      margin: 12px 0 10px 0;
+      font-size: 14px;
+      font-weight: 700;
+      scroll-margin-top: 24px;
+    }
+
+    .status.loading {
+      color: #7a5a00 !important;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(0, 0, 0, 0.15);
+      border-top: 3px solid #4d8b1f;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .result-card {
+      display: none;
+      max-width: 760px;
+      margin: 12px auto 16px auto;
+      border: 1px solid #bfb6aa;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 14px;
+      scroll-margin-top: 24px;
+    }
+
+    .result-title {
+      font-weight: 700;
+      text-align: center;
+      font-size: 22px;
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: none;
+      text-align: center;
+      margin-bottom: 16px;
+      scroll-margin-top: 24px;
+    }
+
+    .actions .btn {
+      margin: 4px 6px;
+    }
+
+    .form-wrap {
+      display: none;
+      margin-top: 14px;
+      scroll-margin-top: 24px;
+    }
+
+    #formFrame {
+      width: 100%;
+      height: 1450px;
+      border: none;
+      background: #fff;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 768px) {
+      .page {
+        padding: 8px;
+      }
+
+      .panel {
+        padding: 12px;
+      }
+
+      .hero {
+        margin-bottom: 12px;
+      }
+
+      .hero-content {
+        padding: 10px 10px 12px 10px;
+      }
+
+      .logo-row {
+        justify-content: flex-start;
+        margin-bottom: 12px;
+      }
+
+      .event-logo {
+        max-width: 170px;
+        max-height: 85px;
+      }
+
+      .app-title {
+        font-size: 22px;
+        line-height: 1.25;
+        margin: 4px 0 8px 0;
+      }
+
+      .app-subtitle {
+        font-size: 15px;
+        line-height: 1.5;
+        margin: 0 auto 12px auto;
+      }
+
+      .hero-notes {
+        font-size: 15px;
+        line-height: 1.6;
+        padding-left: 16px;
+      }
+
+      .hero-notes li {
+        margin-bottom: 8px;
+      }
+.section-title {
+  font-size: 38px;
+  gap: 28px;
+  margin: 22px auto 24px auto;
+}
+
+.section-title::before,
+.section-title::after {
+  max-width: 310px;
+}
+      .section-subtitle {
+        font-size: 12px;
+        margin-bottom: 6px;
+      }
+
+      .separator {
+        margin: 6px 0 14px 0;
+      }
+
+      .notice-box .line1 {
+        font-size: 16px;
+      }
+
+      .notice-box .line2,
+      .notice-box .line3,
+      .notice-box .line4 {
+        font-size: 16px;
+      }
+
+      .notice-box .line5 {
+        font-size: 12px;
+      }
+
+      .search-area {
+        max-width: 100%;
+      }
+
+      .search-area input {
+        font-size: 22px;
+      }
+
+      .btn {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .actions .btn {
+        margin: 4px 0;
+      }
+
+      #formFrame {
+        height: 1300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="panel">
+
+      <div class="hero">
+        <div class="hero-bg" id="heroBg"></div>
+
+        <div class="hero-content">
+          <div class="logo-row">
+            <img id="eventLogo" class="event-logo" src="" alt="Regatta Entry Management System" />
+          </div>
+
+          <div class="app-title">Regatta Entry Management System</div>
+
+          <div class="app-subtitle">
+            Βρείτε το σκάφος σας με τον αριθμό ιστίου και συνεχίστε στην καταχώριση συμμετοχής.
+          </div>
+
+          <ul class="hero-notes" id="eventNotes"></ul>
+        </div>
+      </div>
+
+     
+
+      <div class="separator"></div>
+
+  <div class="section-title" id="eventTitle"></div>
+
+      <div class="notice-box">
+        <div class="line1">Η ΑΝΑΖΗΤΗΣΗ ΓΙΝΕΤΑΙ ΜΟΝΟ ΜΕ ΤΟΝ ΑΡΙΘΜΟ ΙΣΤΙΟΥ.</div>
+        <div class="line2">Παρακαλούμε συμπληρώστε το πεδίο αναζήτησης</div>
+        <div class="line3">ΠΡΟΣΟΧΗ</div>
+        <div class="line4" id="noticeYearText">
+          Για να συνεχίσετε θα πρέπει να έχετε πιστοποιητικό της Εθνικής Αρχής για το έτος 2026.
+        </div>
+        <div class="line5" id="noticeInfoText">
+          Για πληροφορίες: ΓΡΑΜΜΑΤΕΙΑ ΑΓΩΝΑ ΤΗΛ.: 210 4101 114
+        </div>
+      </div>
+
+      <div class="search-area">
+        <input type="text" id="sailNumber" placeholder="Αριθμός ιστίου" inputmode="numeric" />
+        <button class="btn" id="searchBtn" type="button">ΑΝΑΖΗΤΗΣΗ</button>
+      </div>
+
+      <div class="status" id="status"></div>
+
+      <div class="result-card" id="resultCard">
+        <div class="result-title" id="resultText"></div>
+      </div>
+
+      <div class="actions" id="actions">
+        <button class="btn" id="continueBtn" type="button">ΣΥΝΕΧΕΙΑ ΣΤΗ ΣΥΜΜΕΤΟΧΗ</button>
+        <button class="btn secondary" id="newSearchBtn" type="button">ΝΕΑ ΑΝΑΖΗΤΗΣΗ</button>
+      </div>
+
+      <div class="form-wrap" id="formWrap">
+        <iframe id="formFrame" src="" title="Καταχώριση συμμετοχής"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================
+    // 1. ΒΑΣΙΚΕΣ ΡΥΘΜΙΣΕΙΣ ΕΦΑΡΜΟΓΗΣ
+    // =========================================
+
+ const CONFIG = {
+  EVENT_TITLE: "ΕΠΙΔΑΥΡΟΣ 2026",
+  LOOKUP_URL: "https://script.google.com/macros/s/AKfycbzOp-9gQ9xMZtb7GxrLcWW_Nc5yrBu7KbmqDVYlI3s1GQ3wJhmOCfKyaoKgvTfttI2v/exec",
+  JOTFORM_BASE_URL: "https://form.jotform.com/261339003690352",
+  EVENT_LOGO: "https://github.com/jsamartzis-png/logos/blob/main/logo_EntryFlow_removebg-preview.png?raw=true",
+  EVENT_BACKGROUND: "background.jpg",
+  YEAR: "2026",
+  INFO_PHONE: "210 4101 113"
+};
+
+const LOOKUP_URL = CONFIG.LOOKUP_URL;
+const JOTFORM_BASE_URL = CONFIG.JOTFORM_BASE_URL;
+const EVENT_LOGO = CONFIG.EVENT_LOGO;
+const EVENT_BACKGROUND = CONFIG.EVENT_BACKGROUND;
+const EVENT_TITLE = CONFIG.EVENT_TITLE;
+
+    const EVENT_NOTES = [
+  "Με τη χρήση αυτής της εφαρμογής, μπορείτε εύκολα να υποβάλετε τα απαραίτητα έγγραφα και να ολοκληρώσετε την πληρωμή του παραβόλου (όλα σε ένα σημείο).",
+  'Διαβάστε την <a href="https://docs.google.com/document/d/1_ThpUPcy-w1-D5hScVCcKZ2csmjs6_m-mIkEYNY9c5I/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Πολιτική Απορρήτου</a> και τους <a href="https://docs.google.com/document/d/1Btn0eMNSZotVyH3n7RETC3ur8lZ4V_2I/edit?usp=sharing&ouid=115039995651229449950&rtpof=true&sd=true" target="_blank" rel="noopener noreferrer">Όρους Χρήσης</a>.'
+];
+
+ const NOTICE_YEAR_TEXT =
+  "Για να συνεχίσετε θα πρέπει να έχετε πιστοποιητικό της Εθνικής Αρχής για το έτος " + CONFIG.YEAR + ".";
+
+const NOTICE_INFO_TEXT =
+  "Για πληροφορίες: ΓΡΑΜΜΑΤΕΙΑ ΑΓΩΝΑ ΤΗΛ.: " + CONFIG.INFO_PHONE;
+
+    // =========================================
+    // 2. UNIQUE NAMES ΤΗΣ JOTFORM
+    // =========================================
+
+    const fieldNames = {
+      yacht_name: "age",
+      sail_letters: "input298",
+      sail_number: "typeA48",
+      yacht_type: "age13",
+      club: "input17",
+      aph: "APH",
+      cert_date: "input15",
+      cert_type: "typeA490",
+      saronic_cat: "input418",
+      aph_club: "typeA419",
+      aph_intl: "typeA416",
+      aph_ns: "typeA417",
+      aph_dh: "typeA412",
+      last_certificate: "typeA426",
+      special_cat: "typeA437",
+      aph_initial: "typeA439"
+    };
+
+    const sailInput = document.getElementById("sailNumber");
+    const searchBtn = document.getElementById("searchBtn");
+    const continueBtn = document.getElementById("continueBtn");
+    const newSearchBtn = document.getElementById("newSearchBtn");
+    const statusBox = document.getElementById("status");
+    const resultCard = document.getElementById("resultCard");
+    const actions = document.getElementById("actions");
+    const formWrap = document.getElementById("formWrap");
+    const formFrame = document.getElementById("formFrame");
+
+    let lastFoundData = null;
+
+    function scrollToElement(el) {
+      if (!el) return;
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 150);
+    }
+
+    function setupHero() {
+      document.getElementById("eventLogo").src = EVENT_LOGO;
+      document.getElementById("heroBg").style.backgroundImage = "url('" + EVENT_BACKGROUND + "')";
+      document.getElementById("eventTitle").textContent = EVENT_TITLE;
+      document.getElementById("noticeYearText").textContent = NOTICE_YEAR_TEXT;
+      document.getElementById("noticeInfoText").textContent = NOTICE_INFO_TEXT;
+      
+      const notesList = document.getElementById("eventNotes");
+      notesList.innerHTML = "";
+
+      EVENT_NOTES.forEach(function (note) {
+        const li = document.createElement("li");
+        li.innerHTML = note;
+        notesList.appendChild(li);
+      });
+    }
+
+    function setStatus(message, isError = false, isLoading = false, shouldScroll = false) {
+      if (isLoading) {
+        statusBox.classList.add("loading");
+        statusBox.innerHTML = '<span class="spinner"></span>' + (message || "");
+        statusBox.style.color = "#7a5a00";
+        if (shouldScroll) scrollToElement(statusBox);
+        return;
+      }
+
+      statusBox.classList.remove("loading");
+      statusBox.textContent = message || "";
+      statusBox.style.color = isError ? "#b00020" : "#2e7d32";
+
+      if (shouldScroll && message) {
+        scrollToElement(statusBox);
+      }
+    }
+
+    function showResult(data) {
+      const yachtName = data.yacht_name || "";
+      const sailNo = ((data.sail_letters || "") + (data.sail_number || "")).trim() || "";
+
+      document.getElementById("resultText").innerHTML =
+        'Βρέθηκαν τα στοιχεία του σκάφους:<br><strong>' + yachtName + ' με αριθμό ιστίου: ' + sailNo + '</strong>';
+
+      resultCard.style.display = "block";
+      actions.style.display = "block";
+
+      scrollToElement(resultCard);
+    }
+
+    function hideResult() {
+      resultCard.style.display = "none";
+      actions.style.display = "none";
+      formWrap.style.display = "none";
+      formFrame.src = "";
+      lastFoundData = null;
+    }
+
+    
+function formatForJotformNumber(v) {
+  if (v === null || typeof v === "undefined" || v === "") return "";
+
+  let str = String(v).trim();
+
+  // καθάρισε περίεργες τιμές
+  str = str.replace(",", ".");
+
+  let num = parseFloat(str);
+
+  if (isNaN(num)) return "";
+
+  return num.toFixed(1).replace(".", ",");
+}
+function buildPrefillUrl(data) {
+  const params = new URLSearchParams();
+
+  params.set(fieldNames.yacht_name, data.yacht_name || "");
+  params.set(fieldNames.sail_letters, data.sail_letters || "");
+  params.set(fieldNames.sail_number, data.sail_number || "");
+  params.set(fieldNames.yacht_type, data.yacht_type || "");
+  params.set(fieldNames.club, data.club || "");
+
+  params.set(fieldNames.aph, formatForJotformNumber(data.aph_initial));
+  params.set(fieldNames.cert_date, data.certdate_last || "");
+  params.set(fieldNames.cert_type, data.initial_category || data.Initial_Category || "");
+  params.set(fieldNames.saronic_cat, formatForJotformNumber(data.gph));
+  params.set(fieldNames.aph_club, formatForJotformNumber(data.aph_club));
+  params.set(fieldNames.aph_intl, formatForJotformNumber(data.aph_intl));
+  params.set(fieldNames.aph_ns, formatForJotformNumber(data.aph_ns));
+  params.set(fieldNames.aph_dh, formatForJotformNumber(data.aph_dh));
+  params.set(fieldNames.last_certificate, data.certdate_last || "");
+  params.set(fieldNames.special_cat, data.special_category || "");
+  params.set(fieldNames.aph_initial, formatForJotformNumber(data.aph_initial));
+
+  return JOTFORM_BASE_URL + "?" + params.toString();
+}
+
+    async function searchBoat() {
+      const sailNumber = sailInput.value.trim();
+
+      if (!sailNumber) {
+        setStatus("Παρακαλώ πληκτρολόγησε αριθμό ιστίου.", true, false, true);
+        hideResult();
+        return;
+      }
+
+      setStatus("Γίνεται αναζήτηση...", false, true, true);
+      hideResult();
+
+      try {
+        const response = await fetch(LOOKUP_URL + "?id=" + encodeURIComponent(sailNumber));
+        const json = await response.json();
+
+        if (!json.ok) {
+          setStatus("Σφάλμα στο σύστημα αναζήτησης.", true, false, true);
+          return;
+        }
+
+        if (!json.found) {
+          setStatus("Δεν βρέθηκαν στοιχεία για αυτόν τον αριθμό ιστίου.", true, false, true);
+          return;
+        }
+
+      lastFoundData = json.data || {};
+console.log("DATA ΠΟΥ ΗΡΘΑΝ:", lastFoundData);
+showResult(lastFoundData);
+setStatus("Η αναζήτηση ολοκληρώθηκε.");
+      } catch (err) {
+        console.error(err);
+        setStatus("Σφάλμα επικοινωνίας με το σύστημα αναζήτησης.", true, false, true);
+      }
+    }
+
+    function continueToForm() {
+      if (!lastFoundData) {
+        setStatus("Δεν υπάρχουν στοιχεία για συνέχεια.", true, false, true);
+        return;
+      }
+
+      const formUrl = buildPrefillUrl(lastFoundData);
+      formFrame.src = formUrl;
+      formWrap.style.display = "block";
+
+      setTimeout(() => {
+        formWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 250);
+    }
+
+    function resetSearch() {
+      sailInput.value = "";
+      setStatus("");
+      hideResult();
+      sailInput.focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    setupHero();
+
+    searchBtn.addEventListener("click", searchBoat);
+    continueBtn.addEventListener("click", continueToForm);
+    newSearchBtn.addEventListener("click", resetSearch);
+
+    sailInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        searchBoat();
+      }
+    });
+  </script>
+</body>
+</html>
