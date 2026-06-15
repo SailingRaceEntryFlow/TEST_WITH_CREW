@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Regatta Entry Management System</title>
+  <title>Regatta Entry Management System - ΕΠΙΔΑΥΡΟΣ 2026 CREW</title>
 
   <style>
     * {
@@ -17,6 +17,9 @@
       background: #0d5e92;
       min-height: 100vh;
     }
+ textarea {
+    font-family: "Courier New", monospace;
+  }
 
     .page {
       max-width: 980px;
@@ -458,6 +461,54 @@
         <button class="btn secondary" id="newSearchBtn" type="button">ΝΕΑ ΑΝΑΖΗΤΗΣΗ</button>
       </div>
 
+<div id="crewScreen" style="display:none; max-width:720px; margin:20px auto; border:1px solid #bfb6aa; padding:28px; background:white; text-align:center; border-radius:6px;">
+
+  <h3 style="text-align:center;">ΣΤΟΙΧΕΙΑ ΚΥΒΕΡΝΗΤΗ ΚΑΙ ΠΛΗΡΩΜΑΤΟΣ</h3>
+
+  <div style="margin-bottom:20px;">
+<strong>ΚΥΒΕΡΝΗΤΗΣ</strong><br>
+<label style="font-weight:bold;">
+  Συμπληρώστε τον αριθμό αθλητικού δελτίου κυβερνήτη
+</label><br>
+
+<div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:8px;">
+  <input type="text" placeholder="π.χ. 19012" style="height:42px; width:180px; font-size:18px; text-align:center;">
+
+<button type="button" onclick="lookupPerson(this.previousElementSibling)" style="margin-top:0; background:#f1f4ef; color:#2f241d; border:1px solid #bfb6aa; height:42px; padding:0 16px; font-weight:bold; cursor:pointer;">🔍</button>
+</div>
+
+<div style="height:14px;"></div>
+
+<div class="personStatus" style="font-weight:bold; margin-bottom:6px;"></div>
+<table style="width:90%; max-width:620px; margin:8px auto 0 auto; border-collapse:collapse; font-size:16px;">
+  <tr>
+    <td style="border:1px solid #bfb6aa; padding:8px; font-weight:bold; width:120px; background:#f1f4ef;">Όνομα</td>
+    <td style="border:1px solid #bfb6aa; padding:8px;"><span class="name"></span></td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #bfb6aa; padding:8px; font-weight:bold; background:#f1f4ef;">Όμιλος</td>
+    <td style="border:1px solid #bfb6aa; padding:8px;"><span class="club"></span></td>
+  </tr>
+</table>
+  </div>
+
+<div id="crewSection" style="display:none;">
+    <strong>ΠΛΗΡΩΜΑ</strong>
+<div style="font-size:14px; margin:6px 0 10px 0;">
+  Συμπληρώστε <strong>ΜΟΝΟ</strong> τον αριθμό αθλητικού δελτίου του μέλους πληρώματος και πατήστε 🔍
+</div>
+    <div id="crewList"></div>
+<button class="btn secondary" type="button" onclick="addCrewMemberSafe()">
+  + Προσθήκη μέλους
+</button>
+  </div>
+
+  <div style="text-align:center; margin-top:20px;">
+    <button id="continueToJotformBtn" class="btn" type="button" onclick="continueToForm()" style="display:none;">ΣΥΝΕΧΕΙΑ ΣΤΗ ΦΟΡΜΑ</button>
+  </div>
+
+</div>
+
       <div class="form-wrap" id="formWrap">
         <iframe id="formFrame" src="" title="Καταχώριση συμμετοχής"></iframe>
       </div>
@@ -471,19 +522,35 @@
 
  const CONFIG = {
   EVENT_TITLE: "ΕΠΙΔΑΥΡΟΣ 2026",
-  LOOKUP_URL: "https://script.google.com/macros/s/AKfycbzOp-9gQ9xMZtb7GxrLcWW_Nc5yrBu7KbmqDVYlI3s1GQ3wJhmOCfKyaoKgvTfttI2v/exec",
-  JOTFORM_BASE_URL: "https://form.jotform.com/261339003690352",
+  BOAT_LOOKUP_URL: "https://script.google.com/macros/s/AKfycbzOp-9gQ9xMZtb7GxrLcWW_Nc5yrBu7KbmqDVYlI3s1GQ3wJhmOCfKyaoKgvTfttI2v/exec",
+  PERSON_LOOKUP_URL: "https://script.google.com/macros/s/AKfycbw-zgZZeHRC6S5_f1xGkTwx-wXcFNq9z2O4cfhzAHSULQNDrwCp88vcvgU-617pgcg1/exec",
+
+  // ΠΡΟΣΟΧΗ:
+  // Κρατάμε εδώ τη φόρμα που έχει τα πεδία κυβερνήτη/πληρώματος.
+  // Αν φτιάξεις αντίγραφο Jotform για ΕΠΙΔΑΥΡΟΣ, βάλε εδώ το νέο URL.
+  JOTFORM_BASE_URL: "https://form.jotform.com/261428733782363",
+
   EVENT_LOGO: "https://github.com/jsamartzis-png/logos/blob/main/logo_EntryFlow_removebg-preview.png?raw=true",
   EVENT_BACKGROUND: "background.jpg",
   YEAR: "2026",
   INFO_PHONE: "210 4101 113"
 };
 
-const LOOKUP_URL = CONFIG.LOOKUP_URL;
+const BOAT_LOOKUP_URL = CONFIG.BOAT_LOOKUP_URL;
+const PERSON_LOOKUP_URL = CONFIG.PERSON_LOOKUP_URL;
 const JOTFORM_BASE_URL = CONFIG.JOTFORM_BASE_URL;
 const EVENT_LOGO = CONFIG.EVENT_LOGO;
 const EVENT_BACKGROUND = CONFIG.EVENT_BACKGROUND;
 const EVENT_TITLE = CONFIG.EVENT_TITLE;
+
+// Για δοκιμή το αφήνουμε ανοικτό.
+// Όταν θέλεις να κλείσει ο αγώνας, άλλαξε το σε false.
+const FORM_OPEN = true;
+const CLOSED_MESSAGE = "Ο αγώνας έχει κλείσει και δεν δέχεται πλέον συμμετοχές.";
+
+// Χρησιμοποιείται όταν ο χρήστης πατήσει από τη Jotform
+// «Επιστροφή για αλλαγή πληρώματος».
+const STORAGE_KEY = "entryflow_epidavros_2026_crew_state";
 
     const EVENT_NOTES = [
   "Με τη χρήση αυτής της εφαρμογής, μπορείτε εύκολα να υποβάλετε τα απαραίτητα έγγραφα και να ολοκληρώσετε την πληρωμή του παραβόλου (όλα σε ένα σημείο).",
@@ -516,7 +583,55 @@ const NOTICE_INFO_TEXT =
       aph_dh: "typeA412",
       last_certificate: "typeA426",
       special_cat: "typeA437",
-      aph_initial: "typeA439"
+      aph_initial: "typeA439",
+      dynamic_allowance: "dynamic_allowance",
+      orc_class_check: "orc_class_check",
+      captain_name: "typeA93",
+captain_club: "input33",
+captain_card: "input55",
+crew_text: "input514",
+crew_1_name: "crew1_name",
+crew_1_card: "crew1_card",
+crew_1_club: "crew1_club",
+
+crew_2_name: "crew2_name",
+crew_2_card: "crew2_card",
+crew_2_club: "crew2_club",
+
+crew_3_name: "crew3_name",
+crew_3_card: "crew3_card",
+crew_3_club: "crew3_club",
+
+crew_4_name: "crew4_name",
+crew_4_card: "crew4_card",
+crew_4_club: "crew4_club",
+
+crew_5_name: "crew5_name",
+crew_5_card: "crew5_card",
+crew_5_club: "crew5_club",
+
+crew_6_name: "crew6_name",
+crew_6_card: "crew6_card",
+crew_6_club: "crew6_club",
+
+crew_7_name: "crew7_name",
+crew_7_card: "crew7_card",
+crew_7_club: "crew7_club",
+
+crew_8_name: "crew8_name",
+crew_8_card: "crew8_card",
+crew_8_club: "crew8_club",
+
+crew_9_name: "crew9_name",
+crew_9_card: "crew9_card",
+crew_9_club: "crew9_club",
+
+crew_10_name: "crew10_name",
+crew_10_card: "crew10_card",
+crew_10_club: "crew10_club",
+
+crew_preview: "crew_preview",
+crew_json: "crew_json"
     };
 
     const sailInput = document.getElementById("sailNumber");
@@ -607,8 +722,25 @@ function formatForJotformNumber(v) {
 
   if (isNaN(num)) return "";
 
-  return num.toFixed(1).replace(".", ",");
+  return num.toFixed(3).replace(".", ",");
 }
+function getCrewPdfRows() {
+  const rows = [];
+  const crewRows = document.querySelectorAll("#crewTable tbody tr");
+
+  crewRows.forEach((tr) => {
+    const card = String(tr.querySelector("input")?.value || "").trim();
+    const name = String(tr.querySelector(".name")?.innerText || "").trim();
+    const club = String(tr.querySelector(".club")?.innerText || "").trim();
+
+    if (name && card) {
+      rows.push({ name, card, club });
+    }
+  });
+
+  return rows;
+}
+
 function buildPrefillUrl(data) {
   const params = new URLSearchParams();
 
@@ -621,7 +753,7 @@ function buildPrefillUrl(data) {
   params.set(fieldNames.aph, formatForJotformNumber(data.aph_initial));
   params.set(fieldNames.cert_date, data.certdate_last || "");
   params.set(fieldNames.cert_type, data.initial_category || data.Initial_Category || "");
-  params.set(fieldNames.saronic_cat, formatForJotformNumber(data.gph));
+  params.set(fieldNames.saronic_cat, "");
   params.set(fieldNames.aph_club, formatForJotformNumber(data.aph_club));
   params.set(fieldNames.aph_intl, formatForJotformNumber(data.aph_intl));
   params.set(fieldNames.aph_ns, formatForJotformNumber(data.aph_ns));
@@ -629,8 +761,138 @@ function buildPrefillUrl(data) {
   params.set(fieldNames.last_certificate, data.certdate_last || "");
   params.set(fieldNames.special_cat, data.special_category || "");
   params.set(fieldNames.aph_initial, formatForJotformNumber(data.aph_initial));
+  params.set(fieldNames.dynamic_allowance, formatForJotformNumber(data.dynamic_allowance));
+  params.set(fieldNames.orc_class_check, data.orc_class_check || "");
 
-  return JOTFORM_BASE_URL + "?" + params.toString();
+  params.set(fieldNames.captain_name, document.querySelector("#crewScreen .name")?.innerText || "");
+  params.set(fieldNames.captain_club, document.querySelector("#crewScreen .club")?.innerText || "");
+  params.set(fieldNames.captain_card, document.querySelector("#crewScreen input")?.value || "");
+ const crewTextForPreview = buildCrewTextForPdf();
+ params.set(fieldNames.crew_text, crewTextForPreview);
+
+ // Το ίδιο κείμενο το στέλνουμε και με καθαρό Unique Name,
+ // ώστε να μπορεί να γεμίσει ένα πεδίο Long Text με Unique Name: crew_text
+ params.set("crew_text", crewTextForPreview);
+
+  const crewPdfRows = getCrewPdfRows();
+
+
+for (let i = 1; i <= 10; i++) {
+  const row = crewPdfRows[i - 1] || {};
+
+  params.set(fieldNames[`crew_${i}_name`], row.name || "");
+  params.set(fieldNames[`crew_${i}_card`], row.card || "");
+  params.set(fieldNames[`crew_${i}_club`], shortClubName(row.club || ""));
+}
+
+let crewPreview = "";
+
+crewPdfRows.forEach((row, index) => {
+  crewPreview +=
+    (index + 1) + ". " +
+    (row.name || "") + " | " +
+    (row.card || "") + " | " +
+    shortClubName(row.club || "") +
+    "\n";
+});
+
+params.set(fieldNames.crew_preview, crewPreview);
+
+// Κρατάμε και όλο το πλήρωμα σε JSON για επόμενη φάση/πίνακα μέσα στη Jotform
+params.set(fieldNames.crew_json, JSON.stringify(
+  crewPdfRows.map((row) => ({
+    name: row.name || "",
+    card: row.card || "",
+    club: shortClubName(row.club || "")
+  }))
+));
+
+  return JOTFORM_BASE_URL + "?" + Array.from(params.entries())
+    .map(([key, value]) => encodeURIComponent(key) + "=" + encodeURIComponent(value))
+    .join("&");
+}
+
+function shortClubName(club) {
+  return String(club || "")
+    .replace(/\+/g, " ")
+    .replace(/ΝΑΥΤΑΘΛΗΤΙΚΟΣ ΟΜΙΛΟΣ/g, "Ν.Ο.")
+    .replace(/ΝΑΥΤΙΚΟΣ ΟΜΙΛΟΣ/g, "Ν.Ο.")
+    .replace(/ΙΣΤΙΟΠΛΟΪΚΟΣ ΟΜΙΛΟΣ/g, "Ι.Ο.")
+    .replace(/ΙΣΤΙΟΠΛΟΙΚΟΣ ΟΜΙΛΟΣ/g, "Ι.Ο.")
+    .replace(/ΑΘΛΗΤΙΚΟΣ ΝΑΥΤΙΚΟΣ ΟΜΙΛΟΣ/g, "Α.Ν.Ο.")
+    .replace(/ΝΑΥΤΙΚΟΣ ΑΘΛΗΤΙΚΟΣ ΟΜΙΛΟΣ/g, "Ν.Α.Ο.")
+    .trim();
+}
+
+
+function buildCrewTextForPdf() {
+  function cleanText(v) {
+    return String(v || "").replace(/\+/g, " ").trim();
+  }
+
+  function padRight(text, width) {
+    text = cleanText(text);
+    return text.length >= width
+      ? text.substring(0, width - 1) + " "
+      : text.padEnd(width, " ");
+  }
+
+  function centerText(text, width) {
+    text = cleanText(text);
+
+    if (text.length >= width) {
+      return text.substring(0, width);
+    }
+
+    const totalSpaces = width - text.length;
+    const leftSpaces = Math.floor(totalSpaces / 2);
+    const rightSpaces = totalSpaces - leftSpaces;
+
+    return " ".repeat(leftSpaces) + text + " ".repeat(rightSpaces);
+  }
+
+  const AA_COL_WIDTH = 4;
+  const NAME_COL_WIDTH = 28;
+  const CARD_COL_WIDTH = 12;
+  const CLUB_COL_WIDTH = 26;
+  const SEP = "  ";
+
+  const totalWidth =
+    AA_COL_WIDTH +
+    NAME_COL_WIDTH +
+    CARD_COL_WIDTH +
+    CLUB_COL_WIDTH +
+    SEP.length * 3;
+
+  let text = "";
+
+  text += centerText("Α/Α", AA_COL_WIDTH) + SEP;
+  text += centerText("ΟΝΟΜΑΤΕΠΩΝΥΜΟ", NAME_COL_WIDTH) + SEP;
+  text += centerText("ΑΡ. ΔΕΛΤΙΟΥ", CARD_COL_WIDTH) + SEP;
+  text += centerText("ΟΜΙΛΟΣ", CLUB_COL_WIDTH) + "\n";
+
+  text += "─".repeat(totalWidth) + "\n";
+
+  const crewRows = document.querySelectorAll("#crewTable tbody tr");
+
+  let aa = 1;
+
+  crewRows.forEach((tr) => {
+    const name = cleanText(tr.querySelector(".name")?.innerText);
+    const club = shortClubName(tr.querySelector(".club")?.innerText);
+    const card = cleanText(tr.querySelector("input")?.value);
+
+    if (name && card) {
+      text += centerText(aa, AA_COL_WIDTH) + SEP;
+      text += padRight(name, NAME_COL_WIDTH) + SEP;
+      text += centerText(card, CARD_COL_WIDTH) + SEP;
+      text += padRight(club, CLUB_COL_WIDTH) + "\n";
+
+      aa++;
+    }
+  });
+
+  return text.trimEnd();
 }
 
     async function searchBoat() {
@@ -646,7 +908,7 @@ function buildPrefillUrl(data) {
       hideResult();
 
       try {
-        const response = await fetch(LOOKUP_URL + "?id=" + encodeURIComponent(sailNumber));
+       const response = await fetch(BOAT_LOOKUP_URL + "?id=" + encodeURIComponent(sailNumber));
         const json = await response.json();
 
         if (!json.ok) {
@@ -675,7 +937,20 @@ setStatus("Η αναζήτηση ολοκληρώθηκε.");
         return;
       }
 
+      const crewRowsForCheck = getCrewPdfRows();
+
+      if (crewRowsForCheck.length === 0) {
+        alert("Δεν έχει προστεθεί κανένα μέλος πληρώματος.\n\nΠάτησε πρώτα '+ Προσθήκη μέλους', βάλε αριθμό δελτίου και πάτησε 🔍.");
+        return;
+      }
+
+      saveEntryState();
+
       const formUrl = buildPrefillUrl(lastFoundData);
+      console.log("ΠΛΗΡΩΜΑ ΠΟΥ ΘΑ ΣΤΑΛΕΙ:", crewRowsForCheck);
+      console.log("JOTFORM PREFILL URL:", formUrl);
+//alert(buildCrewTextForPdf());
+
       formFrame.src = formUrl;
       formWrap.style.display = "block";
 
@@ -685,6 +960,7 @@ setStatus("Η αναζήτηση ολοκληρώθηκε.");
     }
 
     function resetSearch() {
+      localStorage.removeItem(STORAGE_KEY);
       sailInput.value = "";
       setStatus("");
       hideResult();
@@ -692,10 +968,121 @@ setStatus("Η αναζήτηση ολοκληρώθηκε.");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
+    function getCaptainState() {
+      const captainBlock = document.querySelector("#crewScreen");
+      return {
+        card: captainBlock?.querySelector("input")?.value || "",
+        name: captainBlock?.querySelector(".name")?.innerText || "",
+        club: captainBlock?.querySelector(".club")?.innerText || ""
+      };
+    }
+
+    function saveEntryState() {
+      const state = {
+        boat: lastFoundData || null,
+        captain: getCaptainState(),
+        crew: getCrewPdfRows()
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function restoreEntryState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+
+      if (!saved) {
+        setStatus("Δεν βρέθηκαν αποθηκευμένα στοιχεία πληρώματος. Κάντε νέα αναζήτηση σκάφους.", true, false, true);
+        return;
+      }
+
+      let state = null;
+
+      try {
+        state = JSON.parse(saved);
+      } catch (err) {
+        console.error("Λάθος αποθηκευμένα στοιχεία:", err);
+        setStatus("Δεν ήταν δυνατή η επαναφορά των στοιχείων. Κάντε νέα αναζήτηση σκάφους.", true, false, true);
+        return;
+      }
+
+      lastFoundData = state.boat || null;
+
+      if (lastFoundData) {
+        showResult(lastFoundData);
+      }
+
+      showCrewScreen();
+
+      const captainInput = document.querySelector("#crewScreen input");
+      const captainName = document.querySelector("#crewScreen .name");
+      const captainClub = document.querySelector("#crewScreen .club");
+
+      if (captainInput) captainInput.value = state.captain?.card || "";
+      if (captainName) captainName.innerText = state.captain?.name || "";
+      if (captainClub) captainClub.innerText = state.captain?.club || "";
+
+      document.getElementById("crewSection").style.display = "block";
+      document.getElementById("crewList").innerHTML = "";
+
+      (state.crew || []).forEach((member) => {
+        addCrewMemberFromData(member);
+      });
+
+      if ((state.crew || []).length > 0) {
+        document.getElementById("continueToJotformBtn").style.display = "inline-block";
+      }
+
+      setTimeout(() => {
+        document.getElementById("crewScreen").scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }, 200);
+    }
+
+    function handleCrewEditReturn() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("crewEdit") === "1") {
+        restoreEntryState();
+
+        // Καθαρίζουμε τη διεύθυνση ώστε μετά από ανανέωση να μη μπαίνει ξανά αυτόματα σε edit.
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
     setupHero();
 
+    if (FORM_OPEN === false) {
+      document.querySelector(".hero").style.display = "none";
+      document.querySelector(".separator").style.display = "none";
+      document.getElementById("eventTitle").style.display = "none";
+      document.querySelector(".notice-box").style.display = "none";
+      document.querySelector(".search-area").style.display = "none";
+      resultCard.style.display = "none";
+      actions.style.display = "none";
+      formWrap.style.display = "none";
+
+      statusBox.style.display = "block";
+      statusBox.innerHTML =
+        '<div style="color:#0d5e92; font-size:28px; font-weight:700; text-align:center; margin-bottom:24px;">' +
+        EVENT_TITLE +
+        '</div>' +
+        '<div style="color:#b00020; font-size:22px; text-align:center;">' +
+        CLOSED_MESSAGE +
+        '<br><br>Για πληροφορίες επικοινωνήστε με τη Γραμματεία Αγώνα Τηλ. ' +
+        CONFIG.INFO_PHONE +
+        '.</div>';
+
+      statusBox.style.fontSize = "22px";
+      statusBox.style.marginTop = "60px";
+
+      throw new Error("FORM_CLOSED");
+    }
+
+    handleCrewEditReturn();
+
     searchBtn.addEventListener("click", searchBoat);
-    continueBtn.addEventListener("click", continueToForm);
+    continueBtn.addEventListener("click", showCrewScreen);
     newSearchBtn.addEventListener("click", resetSearch);
 
     sailInput.addEventListener("keydown", function (e) {
@@ -704,6 +1091,207 @@ setStatus("Η αναζήτηση ολοκληρώθηκε.");
         searchBoat();
       }
     });
-  </script>
+function showCrewScreen() {
+  document.querySelector(".hero").style.display = "none";
+  document.querySelector(".separator").style.display = "none";
+  document.getElementById("eventTitle").style.display = "none";
+  document.querySelector(".notice-box").style.display = "none";
+  document.querySelector(".search-area").style.display = "none";
+  statusBox.style.display = "none";
+  resultCard.style.display = "none";
+  actions.style.display = "none";
+
+  document.getElementById("crewScreen").style.display = "block";
+  formWrap.style.display = "none";
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+
+// 👉 ΒΑΖΕΙΣ ΕΔΩ ΤΗ ΝΕΑ FUNCTION
+async function lookupPerson(input) {
+  const id = input.value.trim();
+  if (!id) return;
+
+ const row = input.parentElement.parentElement;
+  const nameEl = row.querySelector(".name");
+  const clubEl = row.querySelector(".club");
+  const statusEl = row.querySelector(".personStatus");
+
+  nameEl.innerText = "";
+  clubEl.innerText = "";
+
+  if (statusEl) {
+    statusEl.innerText = "Γίνεται αναζήτηση...";
+    statusEl.style.color = "#7a5a00";
+  }
+
+  try {
+    const res = await fetch(PERSON_LOOKUP_URL + "?type=person&id=" + encodeURIComponent(id));
+    const json = await res.json();
+
+    if (!json.found) {
+      nameEl.innerText = "Δεν βρέθηκε";
+      clubEl.innerText = "";
+
+      if (statusEl) {
+        statusEl.innerText = "✖ Το δελτίο δεν βρέθηκε. Παρακαλούμε ελέγξτε τον αριθμό.";
+        statusEl.style.color = "#b00020";
+      }
+
+      return;
+    }
+
+    nameEl.innerText = json.data.name || "";
+ clubEl.innerText = shortClubName(json.data.club || "");
+    
+const crewSectionEl = document.getElementById("crewSection");
+
+if (crewSectionEl && input.closest("#crewScreen")) {
+  crewSectionEl.style.display = "block";
+
+  // Το κουμπί για Jotform να εμφανίζεται ΜΟΝΟ όταν έχει βρεθεί μέλος πληρώματος,
+  // όχι απλώς όταν βρέθηκε ο κυβερνήτης.
+  if (input.closest("#crewTable")) {
+    document.getElementById("continueToJotformBtn").style.display = "inline-block";
+  }
+}
+    if (statusEl) {
+      statusEl.innerText = "✔ Το δελτίο βρέθηκε και θα προστεθεί αυτόματα στην κατάσταση πληρώματος (crew list) μετά τον έλεγχο εγκυρότητας.";
+      statusEl.style.color = "#2e7d32";
+    }
+
+  } catch (err) {
+    console.error(err);
+
+    if (statusEl) {
+      statusEl.innerText = "✖ Σφάλμα επικοινωνίας. Παρακαλούμε δοκιμάστε ξανά.";
+      statusEl.style.color = "#b00020";
+    }
+  }
+}
+
+function addCrewMember() {
+  let table = document.getElementById("crewTable");
+
+  if (!table) {
+    document.getElementById("crewList").innerHTML = `
+      <table id="crewTable" style="width:100%; border-collapse:collapse; font-size:15px; margin-top:14px;">
+        <thead>
+          <tr style="background:#f1f4ef;">
+            <th style="border:1px solid #bfb6aa; padding:6px; width:45px;">Α/Α</th>
+            <th style="border:1px solid #bfb6aa; padding:6px;">ΔΕΛΤΙΟ</th>
+            <th style="border:1px solid #bfb6aa; padding:6px;">ΟΝΟΜΑ</th>
+            <th style="border:1px solid #bfb6aa; padding:6px;">ΟΜΙΛΟΣ</th>
+            <th style="border:1px solid #bfb6aa; padding:6px; width:90px;">ΕΝΕΡΓΕΙΑ</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    `;
+
+    table = document.getElementById("crewTable");
+  }
+
+  const tbody = table.querySelector("tbody");
+  const tr = document.createElement("tr");
+
+  tr.innerHTML = `
+    <td class="rowNo" style="border:1px solid #bfb6aa; padding:6px; text-align:center;"></td>
+    <td style="border:1px solid #bfb6aa; padding:6px;">
+     <input type="text" placeholder="19012" style="width:75px; height:36px; font-size:16px; text-align:center;">
+      <div class="personStatus" style="font-weight:bold; margin-top:6px; font-size:12px;"></div>
+    </td>
+    <td style="border:1px solid #bfb6aa; padding:6px;"><span class="name"></span></td>
+    <td style="border:1px solid #bfb6aa; padding:6px;"><span class="club"></span></td>
+   <td style="border:1px solid #bfb6aa; padding:6px; text-align:center;">
+  <button type="button"
+          onclick="lookupPerson(this.closest('tr').querySelector('input'))"
+          style="background:#f1f4ef; color:#2f241d; border:1px solid #bfb6aa; padding:6px 10px; font-weight:bold; cursor:pointer;">
+    🔍
+  </button>
+
+  <button type="button"
+          onclick="deleteCrewRow(this)"
+          style="color:#b00020;">
+    ✖
+  </button>
+</td>
+  `;
+
+  tbody.appendChild(tr);
+  renumberCrewRows();
+}
+
+function addCrewMemberSafe() {
+  const rows = document.querySelectorAll("#crewTable tbody tr");
+
+  for (const row of rows) {
+    const input = row.querySelector("input");
+    const card = input?.value.trim();
+    const name = row.querySelector(".name")?.innerText.trim();
+
+    if (card && !name) {
+      alert("Πατήστε πρώτα αναζήτηση 🔍");
+      return;
+    }
+
+    if (!card && !name) {
+      alert("Συμπληρώστε πρώτα το δελτίο στην υπάρχουσα γραμμή και πατήστε αναζήτηση 🔍");
+      return;
+    }
+  }
+
+  addCrewMember();
+}
+
+function deleteCrewRow(btn) {
+  btn.closest("tr").remove();
+
+  const tbody = document.querySelector("#crewTable tbody");
+  if (tbody && tbody.children.length === 0) {
+    document.getElementById("crewList").innerHTML = "";
+  }
+
+  renumberCrewRows();
+}
+
+function renumberCrewRows() {
+  document.querySelectorAll("#crewTable tbody tr").forEach((tr, index) => {
+    tr.querySelector(".rowNo").innerText = index + 1;
+  });
+}
+function addCrewMemberFromData(member) {
+  addCrewMember();
+
+  const rows = document.querySelectorAll("#crewTable tbody tr");
+  const tr = rows[rows.length - 1];
+
+  tr.querySelector("input").value = member.card || "";
+  tr.querySelector(".name").innerText = member.name || "";
+  tr.querySelector(".club").innerText = member.club || "";
+}
+
+function loadCrewFromJson(crewJson) {
+  if (!crewJson) return;
+
+  let members = [];
+
+  try {
+    members = JSON.parse(crewJson);
+  } catch (err) {
+    console.error("Λάθος crew JSON:", err);
+    return;
+  }
+
+  document.getElementById("crewList").innerHTML = "";
+
+  members.forEach((member) => {
+    addCrewMemberFromData(member);
+  });
+}
+</script>
 </body>
 </html>
+
+
